@@ -599,12 +599,12 @@ var redraw = function() {
 	ctx.textAlign = "right";
 	ctx.textBaseline="hanging";
 	ctx.fillStyle = "#000000";
-	ctx.fillText(score + "", bCoords(xblocks - 1, 0)[2], bCoords(0, 0)[1] + ctx.lineWidth);
+	ctx.fillText("Current Score " + score + "", bCoords(xblocks - 1, 0)[2], bCoords(0, 0)[1] + ctx.lineWidth);
 
 	ctx.textAlign = "left";
 	ctx.textBaseline="hanging";
 	ctx.fillStyle = "#000000";
-	ctx.fillText(hi_score + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth);
+	ctx.fillText("High Score " + hi_score + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth);
 	
 //	ctx.fillText(window.innerWidth + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth);
 }
