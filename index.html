@@ -968,6 +968,8 @@ var touchStartH = function(e) {
 window.addEventListener("touchstart", touchStartH);
 
 var touchMoveH = function(e) {
+	
+	var dpr = window.devicePixelRatio || 1;
 
 	if (Math.abs(curTouchX - touchStartX) > maxXdiff) {
 		maxXdiff = Math.abs(curTouchX - touchStartX);
@@ -978,7 +980,7 @@ var touchMoveH = function(e) {
 	}
 
 
-	if (Math.abs(curTouchX - prevTouchX) > 70) {
+	if (Math.abs(curTouchX - prevTouchX) > 70 * dpr) {
 
 		// move right
 		if (curTouchX - prevTouchX > 0) {
@@ -987,7 +989,7 @@ var touchMoveH = function(e) {
 			keyPressH(e);
 
 		// move left
-		} else if (curTouchX - prevTouchX < 0) {
+		} else if (curTouchX - prevTouchX < 0 * dpr) {
 
 			e.key = "ArrowLeft";
 			keyPressH(e);
@@ -1014,12 +1016,14 @@ window.addEventListener("touchcancel", touchCancelH);
 
 var touchEndH = function(e) {
 
+	var dpr = window.devicePixelRatio || 1;
+
 	var touchEndX = e.changedTouches[0].pageX;
 	var touchEndY = e.changedTouches[0].pageY;
 
-	if (Math.abs(touchEndX - touchStartX) <= 70 &&
-				Math.abs(touchEndY - touchStartY) <= 70 &&
-				maxXdiff <= 70 && maxYdiff <= 70) {
+	if (Math.abs(touchEndX - touchStartX) <= 70 * dpr &&
+				Math.abs(touchEndY - touchStartY) <= 70 * dpr &&
+				maxXdiff <= 70 * dpr && maxYdiff <= 70 * dpr ) {
 
 		var canvasPageCoords = pageCoords(canvas);
 
