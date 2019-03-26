@@ -304,8 +304,7 @@ var drawBord = function() {
 	ctx.lineCap = "round";
 	ctx.strokeStyle = "#000000";
 
-	ctx.stroke(); ctx.stroke();
-	ctx.stroke(); ctx.stroke();
+	ctx.stroke();
 	
 	ctx.strokeStyle = "#000000";
 
@@ -368,9 +367,8 @@ var drawBlock = function(c, x, y) {
 
 		ctx.fill();
 
-		ctx.stroke(); ctx.stroke();
-		ctx.stroke(); ctx.stroke();
-
+		ctx.stroke();
+		
 		/*
 		ctx.lineWidth = 2;
 		ctx.moveTo(coords[0] + ctx.lineWidth/2, coords[1] - ctx.lineWidth/2);
@@ -400,8 +398,7 @@ var drawX = function(c, x, y) {
 		ctx.fillStyle = "#FFFFFF";
 		ctx.fill();
 
-		ctx.stroke(); ctx.stroke();
-		ctx.stroke(); ctx.stroke();
+		ctx.stroke();
 	}
 }
 
@@ -522,9 +519,8 @@ var drawTet = function(tetX, tetY, tetType, tetRot) {
   */
 	ctx.arc(leftHairCoords[0] + blockSize / 4, leftHairCoords[1], (leftHairCoords[2] - leftHairCoords[0]) / 1.33, 0.5 * Math.PI, 1.5 * Math.PI, true);
 
-	ctx.stroke(); ctx.stroke();
-	ctx.stroke(); ctx.stroke();
-
+	ctx.stroke();
+	
 	var rightHairCoords = bCoords(rightX + 1, rightTopLevel);
 	var rightHairCoords2 = bCoords(rightX + 1, rightTopLevel - 1);
 
@@ -538,9 +534,8 @@ var drawTet = function(tetX, tetY, tetType, tetRot) {
 	*/
 	ctx.arc(rightHairCoords[2] - blockSize / 4, rightHairCoords[1], (rightHairCoords[2] - rightHairCoords[0]) / 1.33, 0.5 * Math.PI, 1.5 * Math.PI);
 
-	ctx.stroke(); ctx.stroke();
-	ctx.stroke(); ctx.stroke();
-
+	ctx.stroke();
+	
 	ctx.strokeStyle = "#000000";
 }
 
@@ -614,9 +609,10 @@ var redraw = function() {
 	drawBord();
 	drawBlox();
 	
-    if (drawClearLine()) {
-		window.requestAnimationFrame(redraw);
-	}
+	var lineFound = drawClearLine();
+//    if (lineFound) {
+//		window.requestAnimationFrame(redraw);
+//	}
 	
 	drawTet(curTetX, curTetY, curTet, curTetRot);
 	
@@ -631,7 +627,7 @@ var redraw = function() {
 	ctx.textAlign = "left";
 	ctx.textBaseline="hanging";
 	ctx.fillStyle = "#000000";
-	ctx.fillText("High Score " + hi_score + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth * 10);
+	ctx.fillText("High Score: " + hi_score + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth * 10);
 	
 //	ctx.fillText(window.innerWidth + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth);
 }
@@ -648,6 +644,7 @@ var fallTet = function() {
 
 	if (result[0] == "success") {
 		curTetY -= 1;
+		window.requestAnimationFrame(redraw);
 	} else {
 
 		curTetX = Math.floor(xblocks / 2) - 1;
