@@ -621,7 +621,7 @@ var redraw = function() {
 	ctx.textAlign = "left";
 	ctx.textBaseline="hanging";
 	ctx.fillStyle = "#000000";
-	ctx.fillText("High Score " + hi_score + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth * 10);
+	ctx.fillText("High Score: " + hi_score + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth * 10);
 	
 //	ctx.fillText(window.innerWidth + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth);
 }
@@ -938,8 +938,8 @@ var touchStartH = function(e) {
 
 	var rect = canvas.getBoundingClientRect();
 
-	touchStartX = parseFloat(e.touches[0].pageX) * 1.0 * canvas.width / parseFloat(rect.width);
-	touchStartY = parseFloat(e.touches[0].pageY) * 1.0 * canvas.height / parseFloat(rect.height);
+	touchStartX = parseFloat(e.touches[0].pageX) * 1.0 * dpr;
+	touchStartY = parseFloat(e.touches[0].pageY) * 1.0 * dpr;
 
 	prevTouchX = touchStartX;
 	prevTouchY = touchStartY;
