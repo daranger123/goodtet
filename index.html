@@ -572,14 +572,20 @@ blox[3] = "1111111110"
 */
 
 var drawClearLine = function() {
+	var lineFound = false;
+	
 	for (var j = 0; j < yblocks; j++) {
 		if (blox[j].indexOf("0") == -1) {
 
 			for (var i = 0; i < xblocks; i++) {
 				drawX(blox[j][i], i, j);
 			}
+			
+			lineFound = true;
 		}
 	}
+	
+	return lineFound;
 }
 
 var redraw = function() {
@@ -607,7 +613,10 @@ var redraw = function() {
 												
 	drawBord();
 	drawBlox();
-	drawClearLine();
+	
+    if (drawClearLine()) {
+		window.requestAnimationFrame(redraw);
+	}
 	
 	drawTet(curTetX, curTetY, curTet, curTetRot);
 	
@@ -622,7 +631,7 @@ var redraw = function() {
 	ctx.textAlign = "left";
 	ctx.textBaseline="hanging";
 	ctx.fillStyle = "#000000";
-	ctx.fillText("High Score: " + hi_score + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth * 10);
+	ctx.fillText("High Score " + hi_score + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth * 10);
 	
 //	ctx.fillText(window.innerWidth + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth);
 }
