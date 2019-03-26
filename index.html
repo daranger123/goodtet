@@ -931,8 +931,12 @@ var topBounds = function(x, y) {
 }
 
 var touchStartH = function(e) {
-	touchStartX = e.touches[0].pageX;
-	touchStartY = e.touches[0].pageY;
+
+	// TODO clean up this 5-10 lines
+	var dpr = window.devicePixelRatio || 1;
+
+	touchStartX = e.touches[0].pageX / dpr;
+	touchStartY = e.touches[0].pageY / dpr;
 
 	prevTouchX = touchStartX;
 	prevTouchY = touchStartY;
