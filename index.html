@@ -621,7 +621,7 @@ var redraw = function() {
 	ctx.textAlign = "left";
 	ctx.textBaseline="hanging";
 	ctx.fillStyle = "#000000";
-	ctx.fillText("High Score " + hi_score + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth * 10);
+	ctx.fillText("High Score: " + hi_score + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth * 10);
 	
 //	ctx.fillText(window.innerWidth + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth);
 }
@@ -1001,8 +1001,8 @@ var touchMoveH = function(e) {
 	}
 
 
-	curTouchX = e.touches[0].pageX;
-	curTouchY = e.touches[0].pageY;
+	curTouchX = e.touches[0].pageX * dpr;
+	curTouchY = e.touches[0].pageY * dpr;
 
 	e.preventDefault();
 
@@ -1018,8 +1018,8 @@ var touchEndH = function(e) {
 
 	var dpr = window.devicePixelRatio || 1;
 
-	var touchEndX = e.changedTouches[0].pageX;
-	var touchEndY = e.changedTouches[0].pageY;
+	var touchEndX = e.changedTouches[0].pageX * dpr;
+	var touchEndY = e.changedTouches[0].pageY * dpr;
 
 	if (Math.abs(touchEndX - touchStartX) <= 70 * dpr &&
 				Math.abs(touchEndY - touchStartY) <= 70 * dpr &&
@@ -1053,7 +1053,7 @@ var touchEndH = function(e) {
 
 	}
 
-  maxXdiff = 0;
+	maxXdiff = 0;
 	maxYdiff = 0;
 
 	touchLeft = false;
