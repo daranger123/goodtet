@@ -341,13 +341,13 @@ var drawBlock = function(c, x, y) {
 		} else if (c == '3') {
 			ctx.fillStyle = "#ffff00"
 		} else if (c == '4') {
-			ctx.fillStyle = "#7777ff"
+			ctx.fillStyle = "#4477ff"
 		} else if (c == '5') {
 			ctx.fillStyle = "#ff0000"
 		} else if (c == '6') {
 			ctx.fillStyle = "#ffff00"
 		} else if (c == '7') {
-			ctx.fillStyle = "#7777ff"
+			ctx.fillStyle = "#4477ff"
 		}
 
 		ctx.fill();
@@ -599,12 +599,12 @@ var redraw = function() {
 	ctx.textAlign = "right";
 	ctx.textBaseline="hanging";
 	ctx.fillStyle = "#000000";
-	ctx.fillText("Current Score " + score + "", bCoords(xblocks - 1, 0)[2], bCoords(0, 0)[1] + ctx.lineWidth);
+	ctx.fillText("Score " + score + "", bCoords(xblocks - 1, 0)[2], bCoords(0, 0)[1] + ctx.lineWidth);
 
 	ctx.textAlign = "left";
 	ctx.textBaseline="hanging";
 	ctx.fillStyle = "#000000";
-	ctx.fillText("Score " + hi_score + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth);
+	ctx.fillText("High Score " + hi_score + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth);
 	
 //	ctx.fillText(window.innerWidth + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth);
 }
