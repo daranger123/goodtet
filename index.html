@@ -28,12 +28,24 @@ var pageCoords = function(element) {
 
 </head>
 
+<!-- 
 <body style="-moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none;-o-user-select:none; position: fixed; background-color: #ffffff;" 
  unselectable="on">
+a -->
 
-<canvas id="cc"> </canvas>
+<body style="-moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none;-o-user-select:none; width: 100%; height: 100%; position: fixed" unselectable="on">
+
+<canvas id="cc" style="width: 100%; height: 100%;"> </canvas>
 
 <script>
+
+//var can = document.getElementById("cc");
+
+//can.style.width = window.innerWidth + "px";
+//can.style.height = window.innerHeight + "px";
+
+//can.style.width = "100%";
+//can.style.height = "100%";
 
 
 var xblocks = 10;
@@ -599,12 +611,12 @@ var redraw = function() {
 	ctx.textAlign = "right";
 	ctx.textBaseline="hanging";
 	ctx.fillStyle = "#000000";
-	ctx.fillText("Score " + score + "", bCoords(xblocks - 1, 0)[2], bCoords(0, 0)[1] + ctx.lineWidth);
+	ctx.fillText("Score " + score + "", bCoords(xblocks - 1, 0)[2], bCoords(0, 0)[1] + ctx.lineWidth * 10);
 
 	ctx.textAlign = "left";
 	ctx.textBaseline="hanging";
 	ctx.fillStyle = "#000000";
-	ctx.fillText("High Score " + hi_score + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth);
+	ctx.fillText("High Score " + hi_score + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth * 10);
 	
 //	ctx.fillText(window.innerWidth + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth);
 }
@@ -1086,8 +1098,25 @@ var gameLoop = function(fall) {
 }
 
 var initGame = function() {
-	canvas.width = window.innerWidth - 50;
-	canvas.height = window.innerHeight - 50;
+
+//	canvas.width = window.innerWidth - 50;
+//	canvas.height = window.innerHeight - 50;
+
+	var dpr = window.devicePixelRatio || 1;
+	// Get the size of the canvas in CSS pixels.
+	var rect = canvas.getBoundingClientRect();
+	// Give the canvas pixel dimensions of their CSS
+	// size * the device pixel ratio.
+	//console.log(dpr);
+	//console.log(rect.width);
+	
+	canvas.width = rect.width * dpr;
+	canvas.height = rect.height * dpr;
+	var ctx = canvas.getContext('2d');
+	// Scale all drawing operations by the dpr, so you
+	// don't have to worry about the difference.
+	//ctx.scale(dpr, dpr);
+
 
 	canvas.style["paddingLeft"] = "25px";
 	canvas.style["paddingTop"] = "25px";
