@@ -935,8 +935,10 @@ var touchStartH = function(e) {
 	// TODO clean up this 5-10 lines
 	var dpr = window.devicePixelRatio || 1;
 
-	touchStartX = parseFloat(e.touches[0].pageX) * parseFloat(dpr) / 2;
-	touchStartY = parseFloat(e.touches[0].pageY) * parseFloat(dpr) / 2;
+	var rect = canvas.getBoundingClientRect();
+
+	touchStartX = parseFloat(e.touches[0].pageX) * canvas.width / parseFloat(rect.width);
+	touchStartY = parseFloat(e.touches[0].pageY) * canvas.height / parseFloat(rect.height);
 
 	prevTouchX = touchStartX;
 	prevTouchY = touchStartY;
