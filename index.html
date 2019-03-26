@@ -559,8 +559,9 @@ var curTetY = yblocks - 1;
 }
 
 
+
+blox[0] = "1111111100"
 /*
-blox[0] = "1111111110"
 blox[1] = "1111111110"
 blox[2] = "1111111110"
 blox[3] = "1111111110"
@@ -611,7 +612,7 @@ var redraw = function() {
 	
 	var lineFound = drawClearLine();
 //    if (lineFound) {
-//		window.requestAnimationFrame(redraw);
+//		redraw();
 //	}
 	
 	drawTet(curTetX, curTetY, curTet, curTetRot);
@@ -632,6 +633,10 @@ var redraw = function() {
 //	ctx.fillText(window.innerWidth + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth);
 }
 
+var redrawRequest = function() {
+	window.requestAnimationFrame(redraw);
+}
+
 var gameOver = false;
 
 var fallTet = function() {
@@ -644,7 +649,7 @@ var fallTet = function() {
 
 	if (result[0] == "success") {
 		curTetY -= 1;
-		window.requestAnimationFrame(redraw);
+//		redraw();
 	} else {
 
 		curTetX = Math.floor(xblocks / 2) - 1;
@@ -667,7 +672,7 @@ var fallTet = function() {
 		
 		if (check_clash(blox, getTetCoords(curTet, curTetRot), curTetX, curTetY) == "clash") {
 			gameOver = true;
-			window.requestAnimationFrame(redraw);
+			redraw();
 			clearTimeout(gameLoopTimeout);
 		}
 	}
@@ -698,7 +703,7 @@ var clearFullLines = function(the_blox) {
 	}
 
 	if (redraw) {
-//		setTimeout(redraw, 200);
+//		setTimeout(redrawRequest, 200);
 	}
 
 	return clearedLines;
@@ -756,23 +761,23 @@ var keyPressH = function(e) {
 
 		if (check_clash(blox, getTetCoords(curTet, newRot), curTetX, curTetY) == "safe") {
 			curTetRot = newRot;
-			window.requestAnimationFrame(redraw);
+			redraw();
 		} else if (check_clash(blox, getTetCoords(curTet, newRot), curTetX - 1, curTetY) == "safe") {
 			curTetRot = newRot;
 			curTetX = curTetX - 1;
-			window.requestAnimationFrame(redraw);
+			redraw();
 		} else if (check_clash(blox, getTetCoords(curTet, newRot), curTetX + 1, curTetY) == "safe") {
 			curTetRot = newRot;
 			curTetX = curTetX + 1;
-			window.requestAnimationFrame(redraw);
+			redraw();
 		} else if (curTet == 6 && check_clash(blox, getTetCoords(curTet, newRot), curTetX - 2, curTetY) == "safe") {
 			curTetRot = newRot;
 			curTetX = curTetX - 2;
-			window.requestAnimationFrame(redraw);
+			redraw();
 		} else if (curTet == 6 && check_clash(blox, getTetCoords(curTet, newRot), curTetX + 2, curTetY) == "safe") {
 			curTetRot = newRot;
 			curTetX = curTetX + 2;
-			window.requestAnimationFrame(redraw);
+			redraw();
 		}
 
 		e.preventDefault();
@@ -783,7 +788,7 @@ var keyPressH = function(e) {
 				curTetX -= 1;
 		}
 
-		window.requestAnimationFrame(redraw);
+		redraw();
 
 		e.preventDefault();
 	} else if (e.key == "ArrowRight" || e.key == "d") {
@@ -792,18 +797,18 @@ var keyPressH = function(e) {
 				curTetX += 1;
 		}
 
-		window.requestAnimationFrame(redraw);
+		redraw();
 
 		e.preventDefault();
 	} else if (e.key == "ArrowDown" || e.key == "s") {
 		fallTet();
 
-		window.requestAnimationFrame(redraw);
+		redraw();
 
 		var re = clearFullLines(blox);
 
 		if (re > 0) {
-			setTimeout(redraw, 200);
+			setTimeout(redrawRequest, 200);
 
 			updateScore(re);
 		}
@@ -829,11 +834,11 @@ var keyPressH = function(e) {
 		clearTimeout(gameLoopTimeout);
 		gameLoopTimeout = setTimeout(gameLoop, 900, false);
 		
-		window.requestAnimationFrame(redraw);
+		redraw();
 		var re = clearFullLines(blox);
 
 		if (re > 0) {
-			setTimeout(redraw, 200);
+			setTimeout(redrawRequest, 200);
 
 			updateScore(re);
 		}
@@ -845,7 +850,7 @@ var keyPressH = function(e) {
 }
 
 // debug only
-//window.requestAnimationFrame(redraw);
+//redraw();
 
 canvas.parentElement.addEventListener("keypress", keyPressH);
 canvas.parentElement.focus();
@@ -1077,7 +1082,7 @@ var gameLoop = function(fall) {
 		fallTet();
 	}
 
-	window.requestAnimationFrame(redraw);
+	redraw();
 
 	var re = clearFullLines(blox);
 
@@ -1087,7 +1092,7 @@ var gameLoop = function(fall) {
 				touchMovedLeftOrRight = true;
 		}
 
-		window.requestAnimationFrame(redraw);
+		redraw();
 
 		gameLoopTimeout = setTimeout(gameLoop, 150, false);
 	} else if (touchRight) {
@@ -1097,7 +1102,7 @@ var gameLoop = function(fall) {
 				touchMovedLeftOrRight = true;
 		}
 
-		window.requestAnimationFrame(redraw);
+		redraw();
 
 		gameLoopTimeout = setTimeout(gameLoop, 150, false);
 	} else if (re > 0) {
@@ -1148,7 +1153,7 @@ var initGame = function() {
 
 	blockSize = Math.floor(Math.min(maxXBlockSize, maxYBlockSize) * 2 / 3);
 
-	window.requestAnimationFrame(redraw);
+	redraw();
 
 	gameLoopTimeout = setTimeout(gameLoop, 300);
 
