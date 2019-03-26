@@ -583,7 +583,7 @@ var drawClearLine = function() {
 }
 
 var redraw = function() {
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
+//	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 	if (pause == false) {
 		//ctx.fillStyle = "#ccddee";
@@ -621,7 +621,7 @@ var redraw = function() {
 	ctx.textAlign = "left";
 	ctx.textBaseline="hanging";
 	ctx.fillStyle = "#000000";
-	ctx.fillText("High Score: " + hi_score + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth * 10);
+	ctx.fillText("High Score " + hi_score + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth * 10);
 	
 //	ctx.fillText(window.innerWidth + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth);
 }
