@@ -610,7 +610,8 @@ var redraw = function() {
 	drawTet(curTetX, curTetY, curTet, curTetRot);
 	
 	
-	ctx.font = "60px Arial";
+	//ctx.font = "60px Arial";
+	ctx.font = Math.floor(canvas.width * 0.012) + "px Arial";
 	ctx.textAlign = "right";
 	ctx.textBaseline="hanging";
 	ctx.fillStyle = "#000000";
