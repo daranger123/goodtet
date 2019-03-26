@@ -1,0 +1,1117 @@
+<html>
+
+<meta charset="utf-8"/>
+
+<head>
+
+<script>
+
+// todo delay after instafall
+
+var pageCoords = function(element) {
+
+	var pageX = 0;
+	var pageY = 0;
+
+	var cur = element;
+	while(cur.offsetParent != undefined) {
+		pageX += cur.offsetLeft;
+		pageY += cur.offsetTop;
+
+		cur = cur.offsetParent;
+	}
+
+	return [pageX, pageY];
+}
+
+</script>
+
+</head>
+
+<body style="-moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none;-o-user-select:none; position: fixed; background-color: #000000;" 
+ unselectable="on">
+
+<canvas id="cc"> </canvas>
+
+<script>
+
+
+var xblocks = 14;
+var yblocks = 20;
+
+var gameLoopTimeout = 0;
+var score = 0;
+var hi_score = " ";
+var pause = false;
+
+// #
+// ###
+var tet1_0 = [0, 0,   0, -1,   1, -1,   2, -1]
+var tet1_1 = [0, 0,   0, -1,   0, -2,   1, 0]
+var tet1_2 = [-1, 0,   0, 0,   1, 0,   1, -1]
+var tet1_3 = [0, -1,   1, -1,   1, 0,   1, 1]
+
+//   #
+// ###
+var tet2_0 = [1, 0,   -1, -1,   0, -1,   1, -1]
+var tet2_1 = [1, -1,   0, -1,   0, 0,   0, 1]
+var tet2_2 = [0, 0,   1, 0,   2, 0,   0, -1]
+var tet2_3 = [1, 0,   1, -1,  1, -2,   0, 0]
+
+// x##
+// ##
+var tet3_0 = [0, -1,   1, -1,   1, 0,   2, 0];
+
+// #
+// x#
+//  #
+var tet3_1 = [0, 0,   0, -1,   1, -1,   1, -2];
+
+// #x
+//  ##
+var tet4_0 = [-1, 0,   0, 0,   0, -1,   1, -1];
+
+// x#
+// ##
+// #
+var tet4_1 = [1, 0,   0, -1,   1, -1,   0, -2];
+
+// x#
+// ###
+var tet5_0 = [1, 0,   0, -1,   1, -1,   2, -1];
+
+// x#
+//  ##
+//  #
+var tet5_1 = [1, 0,   1, -1,   1, -2,   2, -1];
+
+// x
+// ###
+//  #
+var tet5_2 = [1, -2,   0, -1,   1, -1,   2, -1];
+
+// x#
+// ##
+//  #
+var tet5_3 = [1, 0,   1, -1,   1, -2,   0, -1];
+
+// x#
+//  #
+//  #
+//  #
+var tet6_0 = [1, 0,   1, -1,   1, -2,   1, -3];
+
+// x
+// ####
+var tet6_1 = [0, -1,   1, -1,   2, -1,   3, -1];
+
+// x #
+//   #
+//   #
+//   #
+var tet6_2 = [2, 0,   2, -1,   2, -2,   2, -3];
+
+// x
+//
+// ####
+var tet6_3 = [0, -2,   1, -2,  2, -2,   3, -2];
+
+// x##
+//  ##
+var tet7_0 = [1, 0,   2, 0,  1, -1,   2, -1];
+
+
+var getTetCoords = function(tet, tetRot) {
+	if (tet == 1) {
+		if (tetRot == 0) {
+			return tet1_0;
+		} else if (tetRot == 1) {
+			return tet1_1;
+		} else if (tetRot == 2) {
+			return tet1_2;
+		} else if (tetRot == 3) {
+			return tet1_3;
+		}
+	} else if (tet == 2) {
+		if (tetRot == 0) {
+			return tet2_0;
+		} else if (tetRot == 1) {
+			return tet2_1;
+		} else if (tetRot == 2) {
+			return tet2_2;
+		} else if (tetRot == 3) {
+			return tet2_3;
+		}
+	} else if (tet == 3) {
+		if (tetRot % 2 == 0) {
+			return tet3_0;
+		} else if (tetRot % 2 == 1) {
+			return tet3_1;
+		}
+	} else if (tet == 4) {
+		if (tetRot % 2 == 0) {
+			return tet4_0;
+		} else if (tetRot % 2 == 1) {
+			return tet4_1;
+		}
+	} else if (tet == 5) {
+		if (tetRot == 0) {
+			return tet5_0;
+		} else if (tetRot == 1) {
+			return tet5_1;
+		} else if (tetRot == 2) {
+			return tet5_2;
+		} else if (tetRot == 3) {
+			return tet5_3;
+		}
+	} else if (tet == 6) {
+		/*
+		if (tetRot == 0) {
+			return tet6_0;
+		} else if (tetRot == 1) {
+			return tet6_1;
+		} else if (tetRot == 2) {
+			return tet6_2;
+		} else if (tetRot == 3) {
+			return tet6_3;
+		}
+		*/
+		if (tetRot % 2 == 0) {
+			return tet6_0;
+		} else if (tetRot % 2 == 1) {
+			return tet6_1;
+		}
+	} else if (tet == 7) {
+		return tet7_0;
+	}
+}
+
+// top left x, y for tet1_1
+var check_clash = function(the_blox, tet_coords, tetX, tetY) {
+
+	for (var i = 0; i < tet_coords.length / 2; i++) {
+		var currentX = tetX + tet_coords[i * 2];
+		var currentY = tetY + tet_coords[i * 2 + 1];
+
+		if (currentX < 0 || currentX >= xblocks) {
+			return "clash x oob";
+		}
+
+		if (currentY < 0 || currentY >= yblocks) {
+			return "clash y oob";
+		}
+
+		if (the_blox[currentY][currentX] != 0) {
+			return "clash";
+		}
+	}
+
+	return "safe";
+}
+
+var replace = function(str, ind, c) {
+	return str.substr(0, ind) + c + str.substr(ind + 1);
+}
+
+var inscribe_tet = function(the_blox, tet_coords, tetX, tetY, c) {
+
+	for (var i = 0; i < tet_coords.length / 2; i++) {
+		var currentX = tetX + tet_coords[i * 2];
+		var currentY = tetY + tet_coords[i * 2 + 1];
+
+		if (the_blox[currentY][currentX] != 0) {
+			console.log("clash in inscribe_tet");
+		}
+
+		the_blox[currentY] = replace(the_blox[currentY], currentX, c);
+	}
+
+}
+
+
+var canvas = document.getElementById("cc");
+
+var border = 0;
+
+/*
+canvas.width = window.innerWidth - border * 4;
+canvas.height = window.innerHeight - border * 4;
+
+canvas.style["paddingLeft"] = border + "px";
+canvas.style["paddingTop"] = border + "px";
+canvas.style["paddingBottom"] = border + "px";
+canvas.style["paddingRight"] = border + "px";
+*/
+
+//canvas.width = window.innerWidth - 50;
+//canvas.height = window.innerHeight - 50;
+
+//canvas.style["paddingLeft"] = "0px";
+//canvas.style["paddingTop"] = "0px";
+
+var maxXBlockSize = canvas.width / xblocks;
+var maxYBlockSize = canvas.height / yblocks;
+
+//var blockSize = 20;
+var blockSize = Math.floor(Math.min(maxXBlockSize, maxYBlockSize) * 2 / 3);
+
+var blox = [];
+for (var j = 0; j < yblocks; j++) {
+	blox[j] = "";
+
+	for (var i = 0; i < xblocks; i++) {
+		blox[j] += "0";
+	}
+}
+
+var bCoords = function(bx, by) {
+  var botLeftX = canvas.width / 2 + (bx - (xblocks / 2)) * blockSize;
+	var topRightX = canvas.width / 2 + (bx + 1 - (xblocks / 2)) * blockSize;
+
+	var topRightY = canvas.height / 2 - (by + 1 - (yblocks / 2)) * blockSize;
+	var botLeftY = canvas.height / 2 - (by - (yblocks / 2)) * blockSize;
+
+	return [botLeftX, botLeftY, topRightX, topRightY]
+}
+
+var ctx = canvas.getContext("2d");
+
+var drawBord = function() {
+	ctx.beginPath();
+	ctx.moveTo(bCoords(0, yblocks - 1)[0], bCoords(0, yblocks - 1)[3]);
+	ctx.lineTo(bCoords(0, 0)[0], bCoords(0, 0)[1]);
+	ctx.lineTo(bCoords(xblocks - 1, 0)[2], bCoords(xblocks - 1, 0)[1]);
+	ctx.lineTo(bCoords(xblocks - 1, yblocks - 1)[2], bCoords(xblocks - 1, yblocks - 1)[3]);
+//	ctx.closePath();
+
+	ctx.lineWidth = 3;
+	ctx.lineCap = "round";
+	ctx.strokeStyle = "#FFFFFF";
+
+	ctx.stroke(); ctx.stroke();
+	ctx.stroke(); ctx.stroke();
+	
+	ctx.strokeStyle = "#000000";
+
+}
+
+// top left x and y, (0,0) is bottom left, blox passed byRef
+var advanceFrame = function(tetX, tetY, tetType, tetRot, the_blox) {
+
+	if (check_clash(the_blox, getTetCoords(tetType, tetRot), tetX, tetY - 1) == "safe") {
+		return ["success", tetX, tetY - 1, tetRot];
+	}
+
+	inscribe_tet(the_blox, getTetCoords(tetType, tetRot), tetX, tetY, "" + tetType);
+
+	return ["failure"];
+}
+
+var drawBlox = function() {
+	for (var i = 0; i < xblocks; i++) {
+		for (var j = 0; j < yblocks; j++) {
+
+			if (blox[j][i] != "0") {
+				drawBlock(blox[j][i], i, j);
+			}
+		}
+	}
+}
+
+var drawBlock = function(c, x, y) {
+	var coords = bCoords(x, y);
+
+	if (c != "0") {
+
+		var ctx = canvas.getContext("2d");
+
+		ctx.beginPath();
+		ctx.moveTo(coords[0], coords[1]);
+		ctx.lineTo(coords[0], coords[3]);
+		ctx.lineTo(coords[2], coords[3]);
+		ctx.lineTo(coords[2], coords[1]);
+		ctx.closePath();
+
+		ctx.fillStyle = "#ffffff";
+
+		if (c == '1') {
+			ctx.fillStyle = "#ff3333"
+		} else if (c == '2') {
+			ctx.fillStyle = "#33ff33"
+		} else if (c == '3') {
+			ctx.fillStyle = "#3333ff"
+		} else if (c == '4') {
+			ctx.fillStyle = "#ff00ff"
+		} else if (c == '5') {
+			ctx.fillStyle = "#00ffff"
+		} else if (c == '6') {
+			ctx.fillStyle = "#ffff00"
+		} else if (c == '7') {
+			ctx.fillStyle = "#888888"
+		}
+
+		ctx.fill();
+
+		ctx.stroke(); ctx.stroke();
+		ctx.stroke(); ctx.stroke();
+
+		/*
+		ctx.lineWidth = 2;
+		ctx.moveTo(coords[0] + ctx.lineWidth/2, coords[1] - ctx.lineWidth/2);
+		ctx.lineTo(coords[0] + ctx.lineWidth/2, coords[3] + ctx.lineWidth/2);
+		ctx.lineTo(coords[2] - ctx.lineWidth/2, coords[3] + ctx.lineWidth/2);
+		ctx.lineTo(coords[2] - ctx.lineWidth/2, coords[1] - ctx.lineWidth/2);
+
+		ctx.lineTo(coords[0] + ctx.lineWidth/2, coords[1] - ctx.lineWidth/2);
+		ctx.stroke();
+		*/
+	}
+}
+
+var drawX = function(c, x, y) {
+	var coords = bCoords(x, y);
+
+	if (c != "0") {
+
+		var ctx = canvas.getContext("2d");
+		ctx.beginPath();
+		ctx.moveTo(coords[0], coords[1]);
+		ctx.lineTo(coords[0], coords[3]);
+		ctx.lineTo(coords[2], coords[3]);
+		ctx.lineTo(coords[2], coords[1]);
+	  ctx.closePath();
+
+		ctx.fillStyle = "#FFFFFF";
+		ctx.fill();
+
+		ctx.stroke(); ctx.stroke();
+		ctx.stroke(); ctx.stroke();
+	}
+}
+
+var drawX_old = function(c, x, y) {
+	var coords = bCoords(x, y);
+
+	if (c != "0") {
+
+		var ctx = canvas.getContext("2d");
+		ctx.beginPath();
+		ctx.moveTo(coords[0], coords[1]);
+		ctx.lineTo(coords[2], coords[3]);
+
+		ctx.moveTo(coords[0], coords[3]);
+		ctx.lineTo(coords[2], coords[1]);
+		//ctx.closePath();
+
+		ctx.strokeStyle = "#FFFFFF";
+		ctx.stroke();
+		ctx.strokeStyle = "#000000";
+	}
+}
+
+//drawBlock('1', 0, 0);
+//drawBlock('1', 9, 0);
+
+var drawTet = function(tetX, tetY, tetType, tetRot) {
+
+	var coords = getTetCoords(tetType, tetRot)
+
+	for (var i = 0; i < coords.length / 2; i++) {
+		var currentX = tetX + coords[i * 2];
+		var currentY = tetY + coords[i * 2 + 1];
+
+		drawBlock("" + tetType, currentX, currentY);
+	}
+
+	// draw crosshairs
+	var leftMost = coords[0];
+	var rightMost = coords[0];
+
+	for (var i = 0; i * 2 < coords.length; i++) {
+		if (coords[i * 2] < leftMost) {
+			leftMost = coords[i * 2];
+		}
+
+		if (coords[i * 2] > rightMost) {
+			rightMost = coords[i * 2];
+		}
+	}
+
+	var leftX = leftMost + tetX;
+	var leftSupplementX = leftX - 1 < 0 ? 0 : leftX - 1;
+	var rightX = rightMost + tetX;
+	var rightSupplementX = rightX + 1 >= xblocks ? xblocks - 1 : rightX + 1;
+
+	var leftTopLevel = 0;
+	var rightTopLevel = 0;
+
+	// old straight vertical hairs
+	/*
+	while (blox[leftTopLevel][leftX] != '0' ||
+					blox[leftTopLevel][leftSupplementX] != '0') {
+		leftTopLevel++;
+	}
+
+	while (blox[rightTopLevel][rightX] != '0' ||
+           blox[rightTopLevel][rightSupplementX] != '0') {
+		rightTopLevel++;
+	}
+
+
+	var leftHairCoords = bCoords(leftX, leftTopLevel);
+
+	ctx.beginPath();
+	ctx.moveTo(leftHairCoords[0], leftHairCoords[1]);
+	ctx.lineTo(leftHairCoords[0], leftHairCoords[3]);
+
+	ctx.stroke(); ctx.stroke();
+	ctx.stroke(); ctx.stroke();
+
+	var rightHairCoords = bCoords(rightX, rightTopLevel);
+
+	ctx.beginPath();
+	ctx.moveTo(rightHairCoords[2], rightHairCoords[1]);
+	ctx.lineTo(rightHairCoords[2], rightHairCoords[3]);
+
+	ctx.stroke(); ctx.stroke();
+	ctx.stroke(); ctx.stroke();
+	*/
+
+	for (var j = yblocks - 1; j >= 0; j--) {
+			if (blox[j][leftX] != '0') {
+				leftTopLevel = j + 1;
+				break;
+			}
+	}
+
+	for (var j = yblocks - 1; j >= 0; j--) {
+			if (blox[j][rightX] != '0') {
+				rightTopLevel = j + 1;
+				break;
+			}
+	}
+
+	var leftHairCoords = bCoords(leftX - 1, leftTopLevel);
+	var leftHairCoords2 = bCoords(leftX - 1, leftTopLevel - 1);
+
+	ctx.strokeStyle = "#ffffff";
+
+	ctx.beginPath();
+	/* v-hairs
+	ctx.moveTo(leftHairCoords[2], leftHairCoords[1]);
+	ctx.lineTo((leftHairCoords[0] + leftHairCoords[2] * 2) / 3, (leftHairCoords[3] + leftHairCoords[1] * 2) / 3);
+
+	ctx.moveTo(leftHairCoords[2], leftHairCoords[1]);
+	ctx.lineTo((leftHairCoords2[0] + leftHairCoords[2] * 2) / 3, (leftHairCoords2[1] + leftHairCoords[1] * 2) / 3);
+  */
+	ctx.arc(leftHairCoords[0] + blockSize / 4, leftHairCoords[1], (leftHairCoords[2] - leftHairCoords[0]) / 1.33, 0.5 * Math.PI, 1.5 * Math.PI, true);
+
+	ctx.stroke(); ctx.stroke();
+	ctx.stroke(); ctx.stroke();
+
+	var rightHairCoords = bCoords(rightX + 1, rightTopLevel);
+	var rightHairCoords2 = bCoords(rightX + 1, rightTopLevel - 1);
+
+	ctx.beginPath();
+	/* v-hairs
+	ctx.moveTo(rightHairCoords[0], rightHairCoords[1]);
+	ctx.lineTo((rightHairCoords[2] + rightHairCoords[0] * 2) / 3, (rightHairCoords[3] + rightHairCoords[1] * 2) / 3);
+
+	ctx.moveTo(rightHairCoords[0], rightHairCoords[1]);
+	ctx.lineTo((rightHairCoords2[2] + rightHairCoords[0] * 2) / 3, (rightHairCoords2[1] + rightHairCoords[1] * 2) / 3);
+	*/
+	ctx.arc(rightHairCoords[2] - blockSize / 4, rightHairCoords[1], (rightHairCoords[2] - rightHairCoords[0]) / 1.33, 0.5 * Math.PI, 1.5 * Math.PI);
+
+	ctx.stroke(); ctx.stroke();
+	ctx.stroke(); ctx.stroke();
+
+	ctx.strokeStyle = "#000000";
+}
+
+//drawTet(4, 19, "1", 0);
+
+var curTet = Math.floor(Math.random() * 7 + 1) + "";
+var curTetRot = Math.floor(Math.random() * 4);
+var curTetX = Math.floor(xblocks / 2) - 1;
+var curTetY = yblocks - 1;
+{
+	 var tetCoords = getTetCoords(curTet, curTetRot);
+
+	 var max = tetCoords[1];
+	 for (var j = 0; j < tetCoords.length / 2; j++) {
+		 if (tetCoords[j * 2 + 1] > max) {
+			 max = tetCoords[j * 2 + 1];
+		 }
+	 }
+
+	 curTetY = curTetY - max;
+}
+
+
+/*
+blox[0] = "1111111110"
+blox[1] = "1111111110"
+blox[2] = "1111111110"
+blox[3] = "1111111110"
+*/
+
+var drawClearLine = function() {
+	for (var j = 0; j < yblocks; j++) {
+		if (blox[j].indexOf("0") == -1) {
+
+			for (var i = 0; i < xblocks; i++) {
+				drawX(blox[j][i], i, j);
+			}
+		}
+	}
+}
+
+var redraw = function() {
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+	if (pause == false) {
+		//ctx.fillStyle = "#ccddee";
+		ctx.fillStyle = "#000000";
+	} else {
+		//ctx.fillStyle = "#cceedd";
+		//ctx.fillStyle = "#ffffff";
+		ctx.fillStyle = "#888888";
+	}
+
+	/*
+	ctx.fillRect(bCoords(0, yblocks - 1)[0],
+												bCoords(0, yblocks - 1)[3],
+												bCoords(xblocks - 1, 0)[2] - bCoords(0, 0)[0],
+												bCoords(0, 0)[1] - bCoords(0, yblocks - 1)[3]);
+*/
+
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+												
+	drawBord();
+	drawBlox();
+	drawClearLine();
+	
+	drawTet(curTetX, curTetY, curTet, curTetRot);
+	
+	
+	ctx.font = "30px Arial";
+	ctx.textAlign = "right";
+	ctx.textBaseline="hanging";
+	ctx.fillStyle = "#9999ee";
+	ctx.fillText(score + "", bCoords(xblocks - 1, 0)[2], bCoords(0, 0)[1] + ctx.lineWidth);
+
+	ctx.textAlign = "left";
+	ctx.textBaseline="hanging";
+	ctx.fillStyle = "#99eeee";
+	ctx.fillText(hi_score + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth);
+	
+//	ctx.fillText(window.innerWidth + "", bCoords(0, 0)[0], bCoords(0, 0)[1] + ctx.lineWidth);
+}
+
+var gameOver = false;
+
+var fallTet = function() {
+	if (gameOver) {
+		clearTimeout(gameLoopTimeout);
+		return;
+	}
+
+	var result = advanceFrame(curTetX, curTetY, curTet, curTetRot, blox);
+
+	if (result[0] == "success") {
+		curTetY -= 1;
+	} else {
+
+		curTetX = Math.floor(xblocks / 2) - 1;
+		curTetY = yblocks - 1;
+		curTet = Math.floor(Math.random() * 7 + 1) + "";
+		curTetRot = Math.floor(Math.random() * 4);
+
+		{
+			 var tetCoords = getTetCoords(curTet, curTetRot);
+
+			 var max = tetCoords[1];
+			 for (var j = 0; j < tetCoords.length / 2; j++) {
+				 if (tetCoords[j * 2 + 1] > max) {
+					 max = tetCoords[j * 2 + 1];
+				 }
+			 }
+
+			 curTetY = curTetY - max;
+		}
+		
+		if (check_clash(blox, getTetCoords(curTet, curTetRot), curTetX, curTetY) == "clash") {
+			gameOver = true;
+			redraw();
+			clearTimeout(gameLoopTimeout);
+		}
+	}
+}
+
+var clearFullLines = function(the_blox) {
+	var redraw = false;
+	var clearedLines = 0;
+
+	for (var j = 0; j < yblocks; j++) {
+		while (the_blox[j].indexOf("0") == -1) {
+
+			for (var j2 = j; j2 + 1 < yblocks; j2++) {
+				the_blox[j2] = the_blox[j2 + 1];
+			}
+
+			the_blox[yblocks - 1] = [];
+
+			for (var i = 0; i < xblocks; i++) {
+				the_blox[yblocks - 1] += "0";
+			}
+
+//			console.log("cleared 1 line");
+
+			clearedLines++;
+			redraw = true;
+		}
+	}
+
+	if (redraw) {
+//		setTimeout(redraw, 200);
+	}
+
+	return clearedLines;
+}
+
+var gameLoop = 0;
+
+var togglePause = function() {
+	if (pause == true) {
+		pause = false;
+	} else {
+		pause = true;
+	}
+
+	clearTimeout(gameLoopTimeout);
+
+	gameLoop(false);
+}
+
+var updateScore = function(numCleared) {
+	if (numCleared < 1) {
+		return;
+	}
+
+	score = score + numCleared * numCleared;
+
+	if (score > hi_score) {
+		localStorage.setItem("hi_score", score);
+		hi_score = score;
+	}
+}
+
+var instaFall = false;
+
+var keyPressH = function(e) {
+
+	if (gameOver) {
+		return;
+	}
+
+	if (e.key == "ArrowUp" || e.key == "w" || e.key == "e") {
+		var newRot = curTetRot + 1;
+
+		if (e.key == "e") {
+			newRot -= 2;
+		}
+
+		if (newRot > 3) {
+			newRot = 0;
+		}
+
+		if (newRot < 0) {
+			newRot = 3;
+		}
+
+		if (check_clash(blox, getTetCoords(curTet, newRot), curTetX, curTetY) == "safe") {
+			curTetRot = newRot;
+			redraw();
+		} else if (check_clash(blox, getTetCoords(curTet, newRot), curTetX - 1, curTetY) == "safe") {
+			curTetRot = newRot;
+			curTetX = curTetX - 1;
+			redraw();
+		} else if (check_clash(blox, getTetCoords(curTet, newRot), curTetX + 1, curTetY) == "safe") {
+			curTetRot = newRot;
+			curTetX = curTetX + 1;
+			redraw();
+		} else if (curTet == 6 && check_clash(blox, getTetCoords(curTet, newRot), curTetX - 2, curTetY) == "safe") {
+			curTetRot = newRot;
+			curTetX = curTetX - 2;
+			redraw();
+		} else if (curTet == 6 && check_clash(blox, getTetCoords(curTet, newRot), curTetX + 2, curTetY) == "safe") {
+			curTetRot = newRot;
+			curTetX = curTetX + 2;
+			redraw();
+		}
+
+		e.preventDefault();
+
+	} else if (e.key == "ArrowLeft" || e.key == "a") {
+
+		if (check_clash(blox, getTetCoords(curTet, curTetRot), curTetX - 1, curTetY) == "safe") {
+				curTetX -= 1;
+		}
+
+		redraw();
+
+		e.preventDefault();
+	} else if (e.key == "ArrowRight" || e.key == "d") {
+
+		if (check_clash(blox, getTetCoords(curTet, curTetRot), curTetX + 1, curTetY) == "safe") {
+				curTetX += 1;
+		}
+
+		redraw();
+
+		e.preventDefault();
+	} else if (e.key == "ArrowDown" || e.key == "s") {
+		fallTet();
+
+		redraw();
+
+		var re = clearFullLines(blox);
+
+		if (re > 0) {
+			setTimeout(redraw, 200);
+
+			updateScore(re);
+		}
+
+		e.preventDefault();
+	} else if (e.key == " ") {
+
+		// todo inefficient
+		var calls = 1;
+
+		for (var y = curTetY - 1; y >= 0; y--) {
+			if (check_clash(blox, getTetCoords(curTet, curTetRot), curTetX, y) == "safe") {
+				calls++;
+			}
+		}
+
+		for (var i = 0; i < calls - 1; i++) {
+
+			fallTet();
+		}
+		
+		// instaFall = true;
+		clearTimeout(gameLoopTimeout);
+		gameLoopTimeout = setTimeout(gameLoop, 900, false);
+		
+		redraw();
+		var re = clearFullLines(blox);
+
+		if (re > 0) {
+			setTimeout(redraw, 200);
+
+			updateScore(re);
+		}
+
+		e.preventDefault();
+	} else if (e.key == "p") {
+		togglePause();
+	}
+}
+
+// debug only
+//redraw();
+
+canvas.parentElement.addEventListener("keypress", keyPressH);
+canvas.parentElement.focus();
+
+
+var touchStartX = 0;
+var touchStartY = 0;
+
+var maxXdiff = 0;
+var maxYdiff = 0;
+
+var curTouchX = 0;
+var curTouchY = 0;
+
+var prevTouchX = 0;
+var prevTouchY = 0;
+
+var touchLeft = false;
+var touchRight = false;
+var touchIn = false;
+var touchOut = false;
+
+var touchMovedLeftOrRight = false;
+
+
+var insideBounds = function(x, y) {
+
+	var canvasPageCoords = pageCoords(canvas);
+
+	if (x > canvasPageCoords[0] + bCoords(0, 0)[0] &&
+				x < canvasPageCoords[0] + bCoords(xblocks - 1, 0)[2] &&
+				y > canvasPageCoords[1] + bCoords(0, yblocks - 1)[3] &&
+				y <= canvasPageCoords[1] + bCoords(0, 0)[1]) {
+
+	  return true;
+	}
+
+	return false;
+}
+
+var leftBounds = function(x, y) {
+
+	var canvasPageCoords = pageCoords(canvas);
+
+	if (x <= canvasPageCoords[0] + bCoords(0, 0)[0] &&
+				y > canvasPageCoords[1] + bCoords(0, yblocks - 1)[3] &&
+				y <= canvasPageCoords[1] + bCoords(0, 0)[1]) {
+
+	  return true;
+	}
+
+	return false;
+}
+
+var rightBounds = function(x, y) {
+
+	var canvasPageCoords = pageCoords(canvas);
+
+	if (x >= canvasPageCoords[0] + bCoords(xblocks - 1, 0)[2] &&
+				y > canvasPageCoords[1] + bCoords(0, yblocks - 1)[3] &&
+				y <= canvasPageCoords[1] + bCoords(0, 0)[1]) {
+
+	  return true;
+	}
+
+	return false;
+}
+
+var bottomBounds = function(x, y) {
+
+	var canvasPageCoords = pageCoords(canvas);
+
+	 if (y > canvasPageCoords[1] + bCoords(0, 0)[1]) {
+
+		 return true;
+	 }
+
+	 return false;
+}
+
+var topBounds = function(x, y) {
+
+	var canvasPageCoords = pageCoords(canvas);
+
+	 if (y < canvasPageCoords[1] + bCoords(0, yblocks - 1)[3]) {
+
+		 return true;
+	 }
+
+	 return false;
+}
+
+var touchStartH = function(e) {
+	touchStartX = e.touches[0].pageX;
+	touchStartY = e.touches[0].pageY;
+
+	prevTouchX = touchStartX;
+	prevTouchY = touchStartY;
+
+	curTouchX = touchStartX;
+	curTouchY = touchStartY;
+
+	if (leftBounds(touchStartX, touchStartY)) {
+		touchLeft = true;
+
+		clearTimeout(gameLoopTimeout);
+		gameLoop(false);
+	}
+
+	if (rightBounds(touchStartX, touchStartY)) {
+		touchRight = true;
+
+		clearTimeout(gameLoopTimeout);
+		gameLoop(false);
+	}
+
+	if (topBounds(touchStartX, touchStartY)) {
+	 togglePause();
+ }
+}
+window.addEventListener("touchstart", touchStartH);
+
+var touchMoveH = function(e) {
+
+	if (Math.abs(curTouchX - touchStartX) > maxXdiff) {
+		maxXdiff = Math.abs(curTouchX - touchStartX);
+	}
+
+	if (Math.abs(curTouchY - touchStartY) > maxYdiff) {
+		maxYdiff = Math.abs(curTouchY - touchStartY);
+	}
+
+
+	if (Math.abs(curTouchX - prevTouchX) > 70) {
+
+		// move right
+		if (curTouchX - prevTouchX > 0) {
+
+			e.key = "ArrowRight";
+			keyPressH(e);
+
+		// move left
+		} else if (curTouchX - prevTouchX < 0) {
+
+			e.key = "ArrowLeft";
+			keyPressH(e);
+
+		}
+
+		prevTouchX = curTouchX;
+		prevTouchY = curTouchY;
+	}
+
+
+	curTouchX = e.touches[0].pageX;
+	curTouchY = e.touches[0].pageY;
+
+	e.preventDefault();
+
+}
+window.addEventListener("touchmove", touchMoveH);
+
+var touchCancelH = function(e) {
+
+}
+window.addEventListener("touchcancel", touchCancelH);
+
+var touchEndH = function(e) {
+
+	var touchEndX = e.changedTouches[0].pageX;
+	var touchEndY = e.changedTouches[0].pageY;
+
+	if (Math.abs(touchEndX - touchStartX) <= 70 &&
+				Math.abs(touchEndY - touchStartY) <= 70 &&
+				maxXdiff <= 70 && maxYdiff <= 70) {
+
+		var canvasPageCoords = pageCoords(canvas);
+
+/*
+		ctx.moveTo(bCoords(0, yblocks - 1)[0], bCoords(0, yblocks - 1)[3]);
+		ctx.lineTo(bCoords(0, 0)[0], bCoords(0, 0)[1]);
+		ctx.lineTo(bCoords(xblocks - 1, 0)[2], bCoords(xblocks - 1, 0)[1]);
+		ctx.lineTo(bCoords(xblocks - 1, yblocks - 1)[2], bCoords(xblocks - 1, yblocks - 1)[3]);
+*/
+
+		if (insideBounds(touchStartX, touchStartY)) {
+
+			e.key = "ArrowUp";
+			keyPressH(e);
+
+		} else if (bottomBounds(touchStartX, touchStartY)) {
+
+			e.key = " ";
+			keyPressH(e);
+		} else if (leftBounds(touchStartX, touchStartY) && touchMovedLeftOrRight == false) {
+			e.key = "ArrowLeft";
+			keyPressH(e);
+		} else if (rightBounds(touchStartX, touchStartY) && touchMovedLeftOrRight == false) {
+			e.key = "ArrowRight";
+			keyPressH(e);
+		}
+
+	}
+
+  maxXdiff = 0;
+	maxYdiff = 0;
+
+	touchLeft = false;
+	touchRight = false;
+	touchIn = false;
+	touchOut = false;
+
+	touchMovedLeftOrRight = false;
+}
+window.addEventListener("touchend", touchEndH);
+
+var gameLoop = function(fall) {
+	if (fall) {
+		fallTet();
+	}
+
+	redraw();
+
+	var re = clearFullLines(blox);
+
+	if (touchLeft) {
+		if (check_clash(blox, getTetCoords(curTet, curTetRot), curTetX - 1, curTetY) == "safe") {
+				curTetX -= 1;
+				touchMovedLeftOrRight = true;
+		}
+
+		redraw();
+
+		gameLoopTimeout = setTimeout(gameLoop, 150, false);
+	} else if (touchRight) {
+
+		if (check_clash(blox, getTetCoords(curTet, curTetRot), curTetX + 1, curTetY) == "safe") {
+				curTetX += 1;
+				touchMovedLeftOrRight = true;
+		}
+
+		redraw();
+
+		gameLoopTimeout = setTimeout(gameLoop, 150, false);
+	} else if (re > 0) {
+		updateScore(re);
+
+		gameLoopTimeout = setTimeout(gameLoop, 200, false);
+	} else {
+		if (pause == true) {
+			gameLoopTimeout = setTimeout(gameLoop, 900, false);
+		} else {
+		
+			if (instaFall) {
+				gameLoopTimeout = setTimeout(gameLoop, 2000, false);
+				instaFall = false;
+			} else {
+				gameLoopTimeout = setTimeout(gameLoop, 900, true);
+			}
+		}
+	}
+}
+
+var initGame = function() {
+	canvas.width = window.innerWidth - 50;
+	canvas.height = window.innerHeight - 50;
+
+	canvas.style["paddingLeft"] = "25px";
+	canvas.style["paddingTop"] = "25px";
+
+	maxXBlockSize = canvas.width / xblocks;
+	maxYBlockSize = canvas.height / yblocks;
+
+	blockSize = Math.floor(Math.min(maxXBlockSize, maxYBlockSize) * 2 / 3);
+
+	redraw();
+
+	gameLoopTimeout = setTimeout(gameLoop, 300);
+
+	hi_score = parseInt(localStorage.getItem("hi_score"));
+	if (isNaN(hi_score)) {
+		hi_score = 0;
+	}
+
+}
+
+setTimeout(initGame, 500);
+
+</script>
+
+</body>
+
+</html>
